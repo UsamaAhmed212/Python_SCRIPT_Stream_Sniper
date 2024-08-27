@@ -16,7 +16,7 @@ import signal
 
 
 # Replace with the video ID of the YouTube live stream
-VIDEO_ID = 'tSG2fb3aQwg'
+# VIDEO_ID = 'tSG2fb3aQwg'
 
 repetitionComment = "#pubgdaddy"
 
@@ -149,15 +149,14 @@ def fetchYoutubeLiveTitle(videoId):
     result = search.result()
     if result['result']:
         title = result['result'][0]['title']
-        print(f"\033[38;2;255;0;0m YouTube Live Title \033[38;5;226m ==>: \033[38;5;33m {title} \033[38;5;33m\033[0m")
+        print(f"\033[38;2;255;0;0m YouTube Live Title \033[38;5;226m ==>: \033[38;2;255;0;0m {title} \033[38;5;33m\033[0m")
     else:
         print(f"\033[38;2;255;0;0m Live Stream Not Found \033[0m")
 
 
 def fetchYoutubeLiveChat(videoId, sharedArray, lock):
     # show_message_box("Ready to Fetch Youtube Live Chat", 1000)  # 1000 milliseconds
-
-    fetchYoutubeLiveTitle(videoId)  # get youtube live title
+    print(videoId)
 
     print("\033[38;5;226m" + "Fetching Youtube Live Chat Data..." + "\033[0m")
     
@@ -306,7 +305,7 @@ async def commentRepeater(comment=None, rawValue=None, typeComments=False, sendC
 
 
 
-async def asyncMainTask():
+async def asyncMainTask(videoId):
     print("\033[38;5;33m" + "Ready to Start Chat Stream Sniper" + "\033[0m")
 
     lock = multiprocessing.Lock()
@@ -351,7 +350,7 @@ async def asyncMainTask():
 
         if keyboard.is_pressed('F3') and (fetchChatProcess is None or not fetchChatProcess.is_alive()):
             print("F3 Key Pressed")
-            fetchChatProcess = multiprocessing.Process(target=fetchYoutubeLiveChat, args=(VIDEO_ID, sharedArray, lock))
+            fetchChatProcess = multiprocessing.Process(target=fetchYoutubeLiveChat, args=(videoId, sharedArray, lock))
             fetchChatProcess.start()
             while keyboard.is_pressed('F3'):  # Wait for F3 Key to be released
                 await asyncio.sleep(0.01)
@@ -395,7 +394,10 @@ async def asyncMainTask():
                 await asyncio.sleep(0.01)
         await asyncio.sleep(0.1)
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
+    VIDEO_ID = None
+    if not VIDEO_ID: VIDEO_ID = input("\033[38;2;255;0;0m" + "Please enter the YouTube video ID: " + "\033[0m")
+    
     with multiprocessing.Manager() as manager:
         # Initialize the sharedArray list for share data in multiprocessing
         sharedArray = manager.list(logFileArrayLoad())  # Load initial values from the log file
@@ -404,5 +406,8 @@ if __name__ == "__main__":
         signal.signal(signal.SIGINT, signal_handler)  # Register the signal handler for the SIGINT signal
         
         globals()['sharedArray'] = sharedArray  # Store the sharedArray in a global variable
-        asyncio.run(asyncMainTask())  # Run the main event loop
+        
+        fetchYoutubeLiveTitle(VIDEO_ID)  # get youtube live title
+
+        asyncio.run(asyncMainTask(VIDEO_ID))  # Run the main event loop
 
